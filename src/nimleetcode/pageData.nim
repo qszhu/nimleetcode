@@ -222,4 +222,4 @@ proc parsePageData*(htmlSrc: string): JsonNode =
   return toJson(parsed.children[1])
 
 when isMainModule:
-  echo parsePageData(readFile("out.html"))
+  echo parsePageData(readFile("test/pageData.html"))
