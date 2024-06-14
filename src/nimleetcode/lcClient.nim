@@ -95,7 +95,7 @@ proc consolePanelConfig*(self: LcClient,
 
 proc contestHistory*(self: LcClient,
   pageNum = 1,
-  pageSize = 1,
+  pageSize = 10,
 ): Future[JsonNode] {.async.} =
   return await contestHistory(self.client, self.host, pageNum, pageSize)
 
