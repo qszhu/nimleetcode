@@ -1,7 +1,9 @@
 import std/[
   htmlparser,
   os,
+  sequtils,
   strutils,
+  unicode,
   xmltree,
 ]
 
@@ -41,7 +43,7 @@ proc wrap(node: XmlNode, parent: Node = nil): Node =
 
 
 proc matchesText(node: Node, text: string): bool {.inline.} =
-  node.raw.innerText.strip(trailing = false).toLowerAscii.startsWith(text.toLowerAscii)
+  strutils.strip(node.raw.innerText, trailing = false).toLowerAscii.startsWith(text.toLowerAscii)
 
 proc isAfterText(node: Node, text: string): bool =
   if node == nil or node.index == 0: return
@@ -52,6 +54,22 @@ proc isAfterText(node: Node, text: string): bool =
   if parent.children.len > 0:
     let prev = parent.children[node.index - 1]
     if prev.matchesText(text): return true
+
+proc singleLine(text: string): string {.inline.} =
+  text.split("\n").mapIt(unicode.strip(it)).join
+
+proc firstLine(text: string): string {.inline.} =
+  text.split("\n")[0]
+
+proc extractList(text: string): string =
+  var res = newSeq[char]()
+  var d = 0
+  for ch in text:
+    if ch == '[': d += 1
+    elif ch == ']': d -= 1
+    res.add ch
+    if d == 0: break
+  res.join.singleLine
 
 proc extractOutput*(html: string): string =
   let root = parseHtml(html)
@@ -64,10 +82,13 @@ proc extractOutput*(html: string): string =
         visit(child, depth + 2)
     of xnText:
       # echo " ".repeat(depth), "|", node.text, "|"
-      let text = node.text.strip
+      let text = strutils.strip(node.text)
       if text.len > 0:
         if node.isAfterText("output") or node.parent.isAfterText("output"):
-          res.add text
+          if text.startsWith("["):
+            res.add text.extractList
+          else:
+            res.add text.firstLine
     of xnComment:
       discard
     else:
@@ -82,45 +103,72 @@ when isMainModule:
 
   block:
     let src = readFile(rootDir / "weekly-contest-401" / "find-the-child-who-has-the-ball-after-k-seconds" / "source.html")
-    doAssert extractOutput(src) == """
+    doAssert extractOutput(src) == strutils.strip("""
 1
 2
 2
-""".strip
+""")
 
   block:
     let src = readFile(rootDir / "weekly-contest-388" / "apple-redistribution-into-boxes" / "source.html")
-    doAssert extractOutput(src) == """
+    doAssert extractOutput(src) == strutils.strip("""
 2
 4
-""".strip
+""")
 
   block:
     let src = readFile(rootDir / "biweekly-contest-4" / "remove-vowels-from-a-string" / "source.html")
-    doAssert extractOutput(src) == """
+    doAssert extractOutput(src) == strutils.strip("""
 "ltcdscmmntyfrcdrs"
 ""
-""".strip
+""")
 
   block:
     let src = readFile(rootDir / "biweekly-contest-8" / "before-and-after-puzzle" / "source.html")
-    doAssert extractOutput(src) == """
+    doAssert extractOutput(src) == strutils.strip("""
 ["writing code rocks"]
 ["a chip off the old block party","a man on a mission impossible","a man on a mission statement","a quick bite to eat my words","chocolate bar of soap"]
 ["a"]
-""".strip
+""")
 
+  block:
+    let src = readFile(rootDir / "biweekly-contest-36" / "find-valid-matrix-given-row-and-column-sums" / "source.html")
+    doAssert extractOutput(src) == strutils.strip("""
+[[3,0],[1,7]]
+[[0,5,0],[6,1,0],[2,0,8]]
+""")
+
+  block:
+    let src = readFile(rootDir / "weekly-contest-257" / "gcd-sort-of-an-array" / "source.html")
+    echo extractOutput(src)
+    doAssert extractOutput(src) == strutils.strip("""
+true
+false
+true
+""")
+
+  block:
+    let src = readFile(rootDir / "weekly-contest-91" / "all-nodes-distance-k-in-binary-tree" / "source.html")
+    echo extractOutput(src)
+    doAssert extractOutput(src) == strutils.strip("""
+[7,4,1]
+[]
+""")
+
+  let skips: seq[string] = @[
+  ]
   when true:
     for kind, path in walkDir(rootDir):
       if kind != pcDir: continue
       for kind, path in walkDir(path):
         if kind != pcDir: continue
         echo path
+        if path in skips: continue
         let src = readFile(path / "source.html")
         let output = extractOutput(src)
-        if output.strip.len == 0:
+        if strutils.strip(output).len == 0:
           raise newException(ValueError, "extraction failed")
         let gt = readFile(path / "outputGT.txt")
-        doAssert output == gt
+        doAssert output == gt, "Expected: |" & gt & "|, got |" & output & "|"
 
-# biweekly-contest-20
+# biweekly-contest-90
