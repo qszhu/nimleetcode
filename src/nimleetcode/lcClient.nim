@@ -134,7 +134,9 @@ proc questionDiscussComments*(self: LcClient,
 
 proc questionEditorData*(self: LcClient,
   titleSlug: string,
+  login = false,
 ): Future[JsonNode] {.async.} =
+  if login: self.setSessionCookie
   return await questionEditorData(self.client, self.host, titleSlug)
 
 proc questionContent*(self: LcClient,

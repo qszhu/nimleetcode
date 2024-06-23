@@ -140,7 +140,6 @@ when isMainModule:
 
   block:
     let src = readFile(rootDir / "weekly-contest-257" / "gcd-sort-of-an-array" / "source.html")
-    echo extractOutput(src)
     doAssert extractOutput(src) == strutils.strip("""
 true
 false
@@ -149,7 +148,6 @@ true
 
   block:
     let src = readFile(rootDir / "weekly-contest-91" / "all-nodes-distance-k-in-binary-tree" / "source.html")
-    echo extractOutput(src)
     doAssert extractOutput(src) == strutils.strip("""
 [7,4,1]
 []

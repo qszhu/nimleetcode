@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.3"
+version       = "0.1.4"
 author        = "Qinsi ZHU"
 description   = "LeetCode API in Nim"
 license       = "MIT"
