@@ -10,6 +10,8 @@ import requests/[
   # contest
   contestUpcomingContests,
   contestHistory,
+  canSwitchToContestDynamicLayout,
+  toggleContestDynamicLayout,
 
   # question
   boundTopicId,
@@ -87,6 +89,11 @@ proc boundTopicId*(self: LcClient,
   titleSlug: string
 ): Future[JsonNode] {.async.} =
   return await boundTopicId(self.client, self.host, titleSlug)
+
+proc canSwitchToContestDynamicLayout*(self: LcClient,
+  contestSlug: string,
+): Future[JsonNode] {.async.} =
+  return await canSwitchToContestDynamicLayout(self.client, self.host, contestSlug)
 
 proc consolePanelConfig*(self: LcClient,
   titleSlug: string
@@ -194,6 +201,14 @@ proc submissionList*(self: LcClient,
 ): Future[JsonNode] {.async.} =
   self.setSessionCookie
   return await submissionList(self.client, self.host, questionSlug, offset, limit, lastKey, status)
+
+proc toggleContestDynamicLayout*(self: LcClient,
+  contestSlug: string,
+  enable: bool,
+): Future[JsonNode] {.async.} =
+  self.setReferer $(self.host / "contest" / contestSlug)
+  self.setSessionCookie
+  return await toggleContestDynamicLayout(self.client, self.host, enable)
 
 proc userQuestionStatus*(self: LcClient,
   titleSlug: string
