@@ -55,5 +55,5 @@ query submissionList($offset: Int!, $limit: Int!, $lastKey: String, $questionSlu
   }
   if lastKey.len > 0: body["variables"]["lastKey"] = %lastKey
   if status.len > 0: body["variables"]["status"] = %status
-  let res = await client.request(url, httpMethod = HttpPost, body = $body)
-  return (await res.body).parseJson
+
+  await client.post(url, body)

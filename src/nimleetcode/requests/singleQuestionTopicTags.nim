@@ -25,5 +25,4 @@ query singleQuestionTopicTags($titleSlug: String!) {
     }
   }
 
-  let res = await client.request(url, httpMethod = HttpPost, body = $body)
-  return (await res.body).parseJson
+  await client.post(url, body)

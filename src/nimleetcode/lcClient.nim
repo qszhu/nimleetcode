@@ -44,6 +44,8 @@ import requests/[
   # submission
   submissionDetails,
   submissionList,
+
+  common,
 ]
 
 export asyncdispatch, json
@@ -232,9 +234,7 @@ proc testSolution*(self: LcClient,
     "question_id": questionId,
     "typed_code": code,
   }
-  let res = await self.client.request(url, httpMethod = HttpPost, body = $body)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.post(url, body)
 
 proc checkSubmissionResult*(self: LcClient,
   submissionId: string,
@@ -243,9 +243,7 @@ proc checkSubmissionResult*(self: LcClient,
   let url = self.host / "submissions" / "detail" / submissionId / "check/"
   if not isTest:
     self.setSessionCookie
-  let res = await self.client.request(url, httpMethod = HttpGet)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.get(url)
 
 proc submitSolution*(self: LcClient,
   titleSlug: string,
@@ -261,21 +259,17 @@ proc submitSolution*(self: LcClient,
     "question_id": questionId,
     "typed_code": code,
   }
-  let res = await self.client.request(url, httpMethod = HttpPost, body = $body)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.post(url, body)
 
 proc register*(self: LcClient, contestSlug: string) {.async.} =
   let url = self.host / "contest" / "api" / contestSlug / "register"
   self.setReferer $url
   self.setSessionCookie
-  discard await self.client.request(url, httpMethod = HttpPost)
+  discard await self.client.post(url, "")
 
 proc timestamp*(self: LcClient): Future[JsonNode] {.async.} =
   let url = self.host / "timestamp/"
-  let res = await self.client.request(url, httpMethod = HttpGet)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.get(url)
 
 proc contestInfo*(self: LcClient,
   contestSlug: string,
@@ -283,9 +277,7 @@ proc contestInfo*(self: LcClient,
 ): Future[JsonNode] {.async.} =
   if login: self.setSessionCookie
   let url = self.host / "contest" / "api" / "info" / (contestSlug & "/")
-  let res = await self.client.request(url, httpMethod = HttpGet)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.get(url)
 
 proc contestMyRanking*(self: LcClient,
   contestSlug: string,
@@ -294,9 +286,7 @@ proc contestMyRanking*(self: LcClient,
   var url = self.host / "contest" / "api" / "myranking" / (contestSlug & "/")
   url = url ? { "region": region }
   self.setSessionCookie
-  let res = await self.client.request(url, httpMethod = HttpGet)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.get(url)
 
 proc contestRanking*(self: LcClient,
   contestSlug: string,
@@ -305,15 +295,11 @@ proc contestRanking*(self: LcClient,
 ): Future[JsonNode] {.async.} =
   var url = self.host / "contest" / "api" / "ranking" / (contestSlug & "/")
   url = url ? { "pagination": $pagination, "region": region }
-  let res = await self.client.request(url, httpMethod = HttpGet)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.get(url)
 
 proc getPage*(self: LcClient, contestSlug, titleSlug: string): Future[string] {.async.} =
   let url = self.host / "contest" / contestSlug / "problems" / (titleSlug & "/")
-  let res = await self.client.request(url, httpMethod = HttpGet)
-  let respBody = await res.body
-  return respBody
+  await self.client.getRaw(url)
 
 proc testContestSolution*(self: LcClient,
   contestSlug: string,
@@ -336,9 +322,7 @@ proc testContestSolution*(self: LcClient,
     "test_mode": testMode,
     "typed_code": code,
   }
-  let res = await self.client.request(url, httpMethod = HttpPost, body = $body)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.post(url, body)
 
 proc submitContestSolution*(self: LcClient,
   contestSlug: string,
@@ -359,6 +343,4 @@ proc submitContestSolution*(self: LcClient,
     "test_mode": testMode,
     "typed_code": code,
   }
-  let res = await self.client.request(url, httpMethod = HttpPost, body = $body)
-  let respBody = await res.body
-  return respBody.parseJson
+  await self.client.post(url, body)
