@@ -2,18 +2,19 @@ import common
 
 
 
-proc toggleContestDynamicLayout*(client: AsyncHttpClient,
+proc updateContestDynamicLayout*(client: AsyncHttpClient,
   host: Uri,
   enable: bool
 ): Future[JsonNode] {.async.} =
   let url = host / "graphql/"
   let body = %*{
-    "operationName": "toggleContestDynamicLayout",
+    "operationName": "updateContestDynamicLayout",
     "query": """
-mutation toggleContestDynamicLayout($enable: Boolean) {
+mutation updateContestDynamicLayout($enable: Boolean) {
   toggleContestDynamicLayout(enable: $enable) {
     error
     ok
+    __typename
   }
 }
 """,
